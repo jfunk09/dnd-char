@@ -1,0 +1,19 @@
+{
+  "name": "DnDChar",
+  "version": "0.0.1",
+  "description": "\"D&D character sheet app.\"",
+  "main": "main.js",
+  "scripts": {
+    "test": "test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/jfunk09/dnd-char.git"
+  },
+  "author": "James Funk",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/jfunk09/dnd-char/issues"
+  },
+  "homepage": "https://github.com/jfunk09/dnd-char"
+}
