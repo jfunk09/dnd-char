@@ -17,6 +17,7 @@
   },
   "homepage": "https://github.com/jfunk09/dnd-char",
   "dependencies": {
+    "ejs-locals": "^1.0.2",
     "express": "^4.10.0"
   }
 }

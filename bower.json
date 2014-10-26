@@ -1,0 +1,31 @@
+{
+  "name": "DnDChar",
+  "version": "0.0.1",
+  "homepage": "https://github.com/jfunk09/dnd-char",
+  "authors": [
+    "James Funk <jfunk09@gmail.com>"
+  ],
+  "description": "'desc'",
+  "main": "main.js",
+  "moduleType": [
+    "amd",
+    "es6",
+    "globals",
+    "node",
+    "yui"
+  ],
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "jquery": "~2.1.1",
+    "lodash": "~2.4.1",
+    "angular": "~1.3.0",
+    "angular-ui-router": "~0.2.11"
+  }
+}
