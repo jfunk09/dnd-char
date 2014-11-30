@@ -29,18 +29,11 @@ app.config(['$stateProvider', '$urlRouterProvider', '$locationProvider', functio
 			url: defaultUrl,
 			views: {
 				'mainMenu': {
-					template: '<div>To be a main menu</div>'
+					templateUrl: 'partials/mainMenu.html',
+					controller: 'mainMenuCtrl'
 				},
 				'content': {
-					template: '<div>Home page content</div>'
-				}
-			}
-		})
-		.state('app.test', {
-			url: '/test',
-			views: {
-				'content@': {
-					template: '<div>test</div>'
+					templateUrl: 'partials/homepage.html'
 				}
 			}
 		})
@@ -49,7 +42,7 @@ app.config(['$stateProvider', '$urlRouterProvider', '$locationProvider', functio
 			views: {
 				'content@': {
 					templateUrl: 'partials/characterList.html',
-					controller: 'MainCtrl'
+					controller: 'characterListCtrl'
 				}
 			}
 		})
@@ -58,24 +51,28 @@ app.config(['$stateProvider', '$urlRouterProvider', '$locationProvider', functio
 			views: {
 				'content@': {
 					templateUrl: 'partials/createCharacter.html',
-					controller: 'AddCtrl'
+					controller: 'addCtrl'
 				}
 			}
 		});
 }]);
 
-app.controller('MainCtrl', ['$scope', '$http', function ($scope, $http) {
+app.controller('mainMenuCtrl', [function () {
+
+}]);
+
+app.controller('characterListCtrl', ['$scope', '$http', function ($scope, $http) {
 		$http.get('/api/characters')
 			.success(function (data) {
 				console.log(data);
 				$scope.characters = data;
 			})
 			.error(function (data) {
-				console.log('error');
+				console.log('error fetching characters');
 			});
 	}]);
 
-app.controller('AddCtrl', ['$scope', '$http', function ($scope, $http) {
+app.controller('addCtrl', ['$scope', '$http', function ($scope, $http) {
 		$scope.name = null;
 		$scope.race = null;
 		$scope.charClass = null;
@@ -83,10 +80,10 @@ app.controller('AddCtrl', ['$scope', '$http', function ($scope, $http) {
 		$scope.addCharacter = function () {
 			$http.post('/api/addCharacter', {name: $scope.name, race: $scope.race, charClass: $scope.charClass})
 				.success(function (data) {
-			
+					console.log('character added: ', data);
 				})
 				.error(function (data) {
-			
+					console.log('error adding character');
 				});
 		};
 	}]);
