@@ -57,8 +57,17 @@ app.config(['$stateProvider', '$urlRouterProvider', '$locationProvider', functio
 		});
 }]);
 
-app.controller('mainMenuCtrl', [function () {
-
+app.controller('mainMenuCtrl', ['$scope', '$state', function ($scope, $state) {
+	$scope.menuTabs = [
+		{number: 0, title: 'Home', state: 'app'},
+		{number: 1, title: 'List', state: 'app.characterList'},
+		{number: 2, title: 'Add Character', state: 'app.createCharacter'}
+	];
+	$scope.activeTab = 0;
+	$scope.goTo =function (tab) {
+		$scope.activeTab = tab.number;
+		$state.go(tab.state);
+	};
 }]);
 
 app.controller('characterListCtrl', ['$scope', '$http', function ($scope, $http) {

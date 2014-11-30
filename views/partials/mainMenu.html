@@ -1,3 +1,7 @@
-<div>
-    Main Menu Inbound
+<div class='col-md-12'>
+    <ul class='nav nav-tabs'>
+        <li ng-repeat='tab in menuTabs' ng-class='{"active": tab.number == activeTab}'>
+            <a ng-click='goTo(tab)'>{{tab.title}}</a>
+        </li>
+    </ul>
 </div>

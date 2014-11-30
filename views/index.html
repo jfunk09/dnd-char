@@ -2,11 +2,18 @@
 <html>
 <head>
 	<base href='/' />
+	<link href='/bower_components/bootstrap/dist/css/bootstrap.css' rel='stylesheet'/>
+	<link href='/bower_components/bootstrap/dist/css/bootstrap-theme.css' rel='stylesheet'/>
+	<link href='/styles/main.css' rel='stylesheet'/>
 </head>
 <body ng-app='dndCharApp' ng-strict>
 
-<div ui-view='mainMenu'></div>
-<div ui-view='content'></div>
+
+<div class='container-fluid'>
+	<div class='row' ui-view='mainMenu'></div>
+	<div class='row' ui-view='content'></div>
+</div>
+
 
 <script src='/bower_components/jquery/dist/jquery.js'></script>
 <script src='/bower_components/bootstrap/dist/js/bootstrap.js'></script>
