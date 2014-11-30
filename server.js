@@ -10,6 +10,8 @@ app.set('view engine', 'html');
 app.use(express.static(__dirname + '/app'));
 app.use('/bower_components', express.static(__dirname + '/bower_components'));
 app.use('/partials', express.static(__dirname + '/views/partials'));
+app.use('/styles', express.static(__dirname + '/styles'));
+app.use('/images', express.static(__dirname + '/images'));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 

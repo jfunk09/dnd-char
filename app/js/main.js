@@ -57,7 +57,7 @@ app.config(['$stateProvider', '$urlRouterProvider', '$locationProvider', functio
 		});
 }]);
 
-app.controller('mainMenuCtrl', ['$scope', '$state', function ($scope, $state) {
+app.controller('mainMenuCtrl', ['$scope', '$state', '$rootScope', '_', function ($scope, $state, $rootScope, _) {
 	$scope.menuTabs = [
 		{number: 0, title: 'Home', state: 'app'},
 		{number: 1, title: 'List', state: 'app.characterList'},
@@ -68,6 +68,9 @@ app.controller('mainMenuCtrl', ['$scope', '$state', function ($scope, $state) {
 		$scope.activeTab = tab.number;
 		$state.go(tab.state);
 	};
+	$rootScope.$on('$stateChangeSuccess', function (event, toState, toParams, fromState, fromParams) {
+		$scope.goTo(_.findWhere($scope.menuTabs, {state: toState.name}));
+	});
 }]);
 
 app.controller('characterListCtrl', ['$scope', '$http', function ($scope, $http) {
