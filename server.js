@@ -2,6 +2,8 @@ var express = require('express');
 var bodyParser = require('body-parser');
 var app = express();
 var mongo = require('mongodb').MongoClient;
+var ObjectID = require('mongodb').ObjectID;
+var Binary = require('mongodb').Binary;
 var Character = require('./lib/character.js');
 
 app.engine('html', require('ejs-locals'));
@@ -16,6 +18,20 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
 var dbUrl = 'mongodb://localhost:27017/dndChar';
+
+app.get('/api/getCharacter', function (req, res) {
+	mongo.connect(dbUrl, function (err, db) {
+		if (err) {
+			res.send('error');
+			return;
+		}
+		var cc = db.collection('characters');
+		var query = cc.findOne({_id: ObjectID.createFromHexString(req.query.id)}, function (err, result) {
+			res.send(new Character(result));
+			db.close();
+		});
+	})
+});
 
 app.get('/api/characters', function (req, res) {
 	mongo.connect(dbUrl, function (err, db) {

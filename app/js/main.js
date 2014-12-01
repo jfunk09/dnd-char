@@ -63,39 +63,56 @@ app.controller('mainMenuCtrl', ['$scope', '$state', '$rootScope', '_', function 
 		{number: 1, title: 'List', state: 'app.characterList'},
 		{number: 2, title: 'Add Character', state: 'app.createCharacter'}
 	];
-	$scope.activeTab = 0;
+	var initialTab = _.findWhere($scope.menuTabs, {state: $state.current.name});
+	$scope.activeTab = initialTab.number;
+
 	$scope.goTo =function (tab) {
 		$scope.activeTab = tab.number;
 		$state.go(tab.state);
 	};
+
 	$rootScope.$on('$stateChangeSuccess', function (event, toState, toParams, fromState, fromParams) {
-		$scope.goTo(_.findWhere($scope.menuTabs, {state: toState.name}));
+		var newTab = _.findWhere($scope.menuTabs, {state: toState.name});
+		$scope.activeTab = newTab ? newTab.number : -1;
 	});
 }]);
 
 app.controller('characterListCtrl', ['$scope', '$http', function ($scope, $http) {
-		$http.get('/api/characters')
+	$http.get('/api/characters')
+		.success(function (data) {
+			console.log(data);
+			$scope.characters = data;
+		})
+		.error(function (data) {
+			console.log('error fetching characters');
+		});
+
+	$scope.getCharacter = function (id) {
+		console.log('id', id);
+		$http.get('/api/getCharacter?id=' + id)
 			.success(function (data) {
-				console.log(data);
-				$scope.characters = data;
+				console.log('get char', data);
 			})
 			.error(function (data) {
-				console.log('error fetching characters');
+				console.log('character fetch error');
 			});
-	}]);
+	}
+
+}]);
+
 
 app.controller('addCtrl', ['$scope', '$http', function ($scope, $http) {
-		$scope.name = null;
-		$scope.race = null;
-		$scope.charClass = null;
-		
-		$scope.addCharacter = function () {
-			$http.post('/api/addCharacter', {name: $scope.name, race: $scope.race, charClass: $scope.charClass})
-				.success(function (data) {
-					console.log('character added: ', data);
-				})
-				.error(function (data) {
-					console.log('error adding character');
-				});
-		};
-	}]);
+	$scope.name = null;
+	$scope.race = null;
+	$scope.charClass = null;
+
+	$scope.addCharacter = function () {
+		$http.post('/api/addCharacter', {name: $scope.name, race: $scope.race, charClass: $scope.charClass})
+			.success(function (data) {
+				console.log('character added: ', data);
+			})
+			.error(function (data) {
+				console.log('error adding character');
+			});
+	};
+}]);
