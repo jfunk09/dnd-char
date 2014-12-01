@@ -46,6 +46,15 @@ app.config(['$stateProvider', '$urlRouterProvider', '$locationProvider', functio
 				}
 			}
 		})
+		.state('app.characterPage', {
+			url: '/character/:id',
+			views: {
+				'content@': {
+					templateUrl: 'partials/characterPage.html',
+					controller: 'characterPageCtrl'
+				}
+			}
+		})
 		.state('app.createCharacter', {
 			url: '/createCharacter',
 			views: {
@@ -64,7 +73,7 @@ app.controller('mainMenuCtrl', ['$scope', '$state', '$rootScope', '_', function 
 		{number: 2, title: 'Add Character', state: 'app.createCharacter'}
 	];
 	var initialTab = _.findWhere($scope.menuTabs, {state: $state.current.name});
-	$scope.activeTab = initialTab.number;
+	$scope.activeTab = initialTab ? initialTab.number : -1;
 
 	$scope.goTo =function (tab) {
 		$scope.activeTab = tab.number;
@@ -77,7 +86,7 @@ app.controller('mainMenuCtrl', ['$scope', '$state', '$rootScope', '_', function 
 	});
 }]);
 
-app.controller('characterListCtrl', ['$scope', '$http', function ($scope, $http) {
+app.controller('characterListCtrl', ['$scope', '$http', '$state', function ($scope, $http, $state) {
 	$http.get('/api/characters')
 		.success(function (data) {
 			console.log(data);
@@ -86,20 +95,21 @@ app.controller('characterListCtrl', ['$scope', '$http', function ($scope, $http)
 		.error(function (data) {
 			console.log('error fetching characters');
 		});
-
-	$scope.getCharacter = function (id) {
-		console.log('id', id);
-		$http.get('/api/getCharacter?id=' + id)
-			.success(function (data) {
-				console.log('get char', data);
-			})
-			.error(function (data) {
-				console.log('character fetch error');
-			});
-	}
-
+	$scope.goToCharacter = function (id) {
+		$state.go('app.characterPage', {id: id});
+	};
 }]);
 
+app.controller('characterPageCtrl', ['$scope', '$http', '$stateParams', function ($scope, $http, $stateParams) {
+	$scope.character = {};
+	$http.get('/api/getCharacter?id=' + $stateParams.id)
+		.success(function (data) {
+			$scope.character = data;
+		})
+		.error(function (data) {
+			console.log('character fetch error');
+		});
+}]);
 
 app.controller('addCtrl', ['$scope', '$http', function ($scope, $http) {
 	$scope.name = null;

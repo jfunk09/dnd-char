@@ -22,14 +22,27 @@ var dbUrl = 'mongodb://localhost:27017/dndChar';
 app.get('/api/getCharacter', function (req, res) {
 	mongo.connect(dbUrl, function (err, db) {
 		if (err) {
-			res.send('error');
+			res.send('error connecting');
+			db.close();
 			return;
 		}
 		var cc = db.collection('characters');
-		var query = cc.findOne({_id: ObjectID.createFromHexString(req.query.id)}, function (err, result) {
-			res.send(new Character(result));
+		var id = null;
+		try {
+			id = ObjectID.createFromHexString(req.query.id);
+			cc.findOne({_id: id}, function (err, result) {
+				if (err) {
+					res.send('error finding');
+					db.close();
+					return;
+				}
+				res.send(new Character(result));
+				db.close();
+			});
+		} catch (e) {
 			db.close();
-		});
+			res.send('error try/catch');
+		}
 	})
 });
 
@@ -37,6 +50,7 @@ app.get('/api/characters', function (req, res) {
 	mongo.connect(dbUrl, function (err, db) {
 		if (err) {
 			res.send('error');
+			db.close();
 			return;
 		}
 		var charactersCollection = db.collection('characters');
