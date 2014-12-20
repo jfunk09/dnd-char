@@ -1,5 +1,6 @@
 var express = require('express');
 var bodyParser = require('body-parser');
+var _ = require('lodash-node');
 var app = express();
 var mongo = require('mongodb').MongoClient;
 var ObjectID = require('mongodb').ObjectID;
@@ -73,6 +74,7 @@ app.post('/api/addCharacter', function (req, res) {
 	mongo.connect(dbUrl, function (err, db) {
 		if (err) {
 			res.send('error');
+			db.close();
 			return;
 		}
 		var cc = db.collection('characters');
@@ -84,34 +86,35 @@ app.post('/api/addCharacter', function (req, res) {
 	});
 });
 
-app.get('/api/update', function (req, res) {
+app.post('/api/updateCharacter', function (req, res) {
+	var params = req.body.params;
+	if (_.isEmpty(params)) {
+		res.sendStatus(200);
+		return;
+	}
 	mongo.connect(dbUrl, function (err, db) {
 		if (err) {
 			res.send('error');
+			db.close();
 			return;
 		}
 		res.sendStatus(200);
 		var cc = db.collection('characters');
-		/*cc.insert({name: 'jeffers'}, {w:1}, function (err, result) {
-			console.log('insert result', result);
+
+		var id = null;
+		try {
+			id = ObjectID.createFromHexString(req.body.dbID);
+		} catch (e) {
 			db.close();
-			res.sendStatus(200);
+			res.send('error try/catch');
+			return;
+		}
+
+		cc.update({_id: id}, {$set: params}, {w:1}, function (err, result) {
+			if(err) {
+				console.log('error updating:', err);
+			}
 		});
-		
-		var stream = cc.find({race:'human'}).stream();
-		stream.on('data', function (character) {
-			cc.remove(character, {w:1}, function () {});
-		});
-		stream.on('end', function () {
-			db.close();
-			res.sendStatus(200);
-		});
-		
-		/*cc.update({name:'jeffers'}, {$set:{race: 'human'}}, {w:1}, function (err, result) {
-			console.log('update result', result);
-			db.close();
-			res.sendStatus(200);
-		});*/
 	});
 });
 

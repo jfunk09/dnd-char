@@ -1,0 +1,6 @@
+<span ng-show='!editMode' ng-click='editField()'>
+	{{fieldValue}}
+</span>
+<span ng-show='editMode'>
+	<input ng-model='modField.value' ng-blur='update()' ng-keyup='keyupHandler($event)'/>
+</span>

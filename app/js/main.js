@@ -14,6 +14,8 @@ var app = angular.module('dndCharApp', [
 	'jqueryModule'
 ]);
 
+//===== STATE DEFINITIONS =====//
+
 app.config(['$stateProvider', '$urlRouterProvider', '$locationProvider', function($stateProvider, $urlRouterProvider, $locationProvider) {
 	var defaultUrl = '/app';
 
@@ -66,6 +68,8 @@ app.config(['$stateProvider', '$urlRouterProvider', '$locationProvider', functio
 		});
 }]);
 
+//===== CONTROLLERS =====//
+
 app.controller('mainMenuCtrl', ['$scope', '$state', '$rootScope', '_', function ($scope, $state, $rootScope, _) {
 	$scope.menuTabs = [
 		{number: 0, title: 'Home', state: 'app'},
@@ -86,43 +90,95 @@ app.controller('mainMenuCtrl', ['$scope', '$state', '$rootScope', '_', function 
 	});
 }]);
 
-app.controller('characterListCtrl', ['$scope', '$http', '$state', function ($scope, $http, $state) {
-	$http.get('/api/characters')
-		.success(function (data) {
-			console.log(data);
-			$scope.characters = data;
-		})
-		.error(function (data) {
-			console.log('error fetching characters');
-		});
-	$scope.goToCharacter = function (id) {
-		$state.go('app.characterPage', {id: id});
+app.controller('characterListCtrl', ['$scope', 'characterService', '$state', '$q',
+	function ($scope, characterService, $state) {
+		$scope.characters = [];
+		characterService.fetchCharacterList()
+			.then(function (result) {
+				$scope.characters = result.data;
+			});
+
+		$scope.goToCharacter = function (id) {
+			$state.go('app.characterPage', {id: id});
+		};
+	}]);
+
+app.controller('characterPageCtrl', ['$scope', '$stateParams', 'characterService',
+	function ($scope, $stateParams, characterService) {
+		$scope.character = {};
+		characterService.fetchCharacter($stateParams.id)
+			.then(function (result) {
+				$scope.character = result.data;
+			});
+
+		$scope.$watch('character', function (character) {
+			if (!character) { return; }
+			characterService.updateCharacter($stateParams.id, character);
+		}, true);
+	}]);
+
+app.controller('addCtrl', ['$scope', 'characterService',
+	function ($scope, characterService) {
+		$scope.name = null;
+		$scope.race = null;
+		$scope.charClass = null;
+
+		$scope.addCharacter = function () {
+			characterService.addCharacter({name: $scope.name, race: $scope.race, charClass: $scope.charClass})
+				.then(function (data) {
+					console.log('character added: ', data);
+				});
+		};
+	}]);
+
+//===== DIRECTIVES =====//
+
+app.directive('editableField', ['$', '_', function ($, _) {
+	return {
+		restrict: 'E',
+		scope: {
+			fieldValue: '='
+		},
+		templateUrl: 'partials/editableField.html',
+		link: function postLink($scope, element) {
+			$scope.editMode = false;
+			$scope.modField = {value: ''};
+			$scope.editField = function () {
+				$scope.editMode = true;
+				$scope.modField.value = $scope.fieldValue;
+				_.defer(function () {
+					$(element).find('input').focus();
+				}, 0);
+			};
+			$scope.update = function () {
+				$scope.editMode = false;
+				$scope.fieldValue = $scope.modField.value;
+			};
+			$scope.keyupHandler = function (event) {
+				if(event.keyCode === 13) {
+					$scope.update();
+				}
+			};
+		}
 	};
 }]);
 
-app.controller('characterPageCtrl', ['$scope', '$http', '$stateParams', function ($scope, $http, $stateParams) {
-	$scope.character = {};
-	$http.get('/api/getCharacter?id=' + $stateParams.id)
-		.success(function (data) {
-			$scope.character = data;
-		})
-		.error(function (data) {
-			console.log('character fetch error');
-		});
-}]);
+//===== SERVICES =====//
 
-app.controller('addCtrl', ['$scope', '$http', function ($scope, $http) {
-	$scope.name = null;
-	$scope.race = null;
-	$scope.charClass = null;
-
-	$scope.addCharacter = function () {
-		$http.post('/api/addCharacter', {name: $scope.name, race: $scope.race, charClass: $scope.charClass})
-			.success(function (data) {
-				console.log('character added: ', data);
-			})
-			.error(function (data) {
-				console.log('error adding character');
-			});
+app.service('characterService', ['$http', '_', function ($http, _) {
+	return {
+		fetchCharacter: function (id) {
+			return $http.get('/api/getCharacter?id=' + id);
+		},
+		fetchCharacterList: function () {
+			return $http.get('/api/characters');
+		},
+		addCharacter: function (params) {
+			return $http.post('/api/addCharacter', params);
+		},
+		updateCharacter: function (id, params) {
+			var postParams = {dbID: id, params: params};
+			return $http.post('/api/updateCharacter', postParams);
+		}
 	};
 }]);
