@@ -23,8 +23,8 @@ var dbUrl = 'mongodb://localhost:27017/dndChar';
 app.get('/api/getCharacter', function (req, res) {
 	mongo.connect(dbUrl, function (err, db) {
 		if (err) {
-			res.send('error connecting');
 			db.close();
+			res.send('error connecting');
 			return;
 		}
 		var cc = db.collection('characters');
@@ -33,12 +33,12 @@ app.get('/api/getCharacter', function (req, res) {
 			id = ObjectID.createFromHexString(req.query.id);
 			cc.findOne({_id: id}, function (err, result) {
 				if (err) {
-					res.send('error finding');
 					db.close();
+					res.send('error finding');
 					return;
 				}
-				res.send(new Character(result));
 				db.close();
+				res.send(new Character(result));
 			});
 		} catch (e) {
 			db.close();
@@ -50,8 +50,8 @@ app.get('/api/getCharacter', function (req, res) {
 app.get('/api/characters', function (req, res) {
 	mongo.connect(dbUrl, function (err, db) {
 		if (err) {
-			res.send('error');
 			db.close();
+			res.send('error');
 			return;
 		}
 		var charactersCollection = db.collection('characters');
@@ -63,8 +63,8 @@ app.get('/api/characters', function (req, res) {
 			characters.push(character.toJSON());
 		});
 		stream.on('end', function () {
-			res.send(characters);
 			db.close();
+			res.send(characters);
 		});
 	});
 });
@@ -73,8 +73,8 @@ app.post('/api/addCharacter', function (req, res) {
 	var character = new Character(req.body);
 	mongo.connect(dbUrl, function (err, db) {
 		if (err) {
-			res.send('error');
 			db.close();
+			res.send('error');
 			return;
 		}
 		var cc = db.collection('characters');
@@ -94,11 +94,10 @@ app.post('/api/updateCharacter', function (req, res) {
 	}
 	mongo.connect(dbUrl, function (err, db) {
 		if (err) {
-			res.send('error');
 			db.close();
+			res.send('error');
 			return;
 		}
-		res.sendStatus(200);
 		var cc = db.collection('characters');
 
 		var id = null;
@@ -113,7 +112,11 @@ app.post('/api/updateCharacter', function (req, res) {
 		cc.update({_id: id}, {$set: params}, {w:1}, function (err, result) {
 			if(err) {
 				console.log('error updating:', err);
+				db.close();
+				res.send('update error');
 			}
+			db.close();
+			res.sendStatus(200);
 		});
 	});
 });

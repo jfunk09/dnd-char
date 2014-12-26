@@ -109,12 +109,18 @@ app.controller('characterPageCtrl', ['$scope', '$stateParams', 'characterService
 		characterService.fetchCharacter($stateParams.id)
 			.then(function (result) {
 				$scope.character = result.data;
+				updatePage();
 			});
 
 		$scope.$watch('character', function (character) {
 			if (!character) { return; }
 			characterService.updateCharacter($stateParams.id, character);
+			updatePage();
 		}, true);
+
+		function updatePage() {
+
+		}
 	}]);
 
 app.controller('addCtrl', ['$scope', 'characterService',
@@ -161,6 +167,112 @@ app.directive('editableField', ['$', '_', function ($, _) {
 			};
 		}
 	};
+}]);
+
+app.directive('healthDisplay', ['$', '_', '$location', function ($, _, $location) {
+	return {
+		restrict: 'E',
+		scope: {
+			health: '=',
+			width: '@'
+		},
+		template: '',
+		link: function postLink(scope, elements, attrs) {
+
+			var width = _.parseInt(scope.width), height = 50, border = 8, buffer = 16, fontSize = 12;
+			var wrapper = d3.select(elements[0])
+				.append('svg')
+				.classed('healthDisplay', true)
+				.attr('width', width + 2*buffer)
+				.attr('height', height + 2*buffer);
+			var defs = wrapper.append('defs');
+			var healthBarClip = 'health-clip-' + _.random(1,100000).toString(); // TODO: do this better with a service or something
+
+			function render(maxHealth, currentHealth, tempHealth) {
+
+				// Health Bar Clip
+				var healthClip = defs.selectAll('#' + healthBarClip).data([currentHealth]);
+				healthClip.enter()
+					.append('clipPath')
+					.attr('id', healthBarClip)
+					.append('rect')
+					.attr('width', (currentHealth / maxHealth) * width)
+					.attr('height', height)
+					.attr('x', buffer + border/2).attr('y', buffer + border/2);
+				healthClip.transition()
+					.select('rect')
+					.attr('width', (currentHealth / maxHealth) * width);
+				healthClip.exit().remove();
+
+				// Health Bar
+				var healthBarContainer = wrapper.selectAll('g.tempBar').data([tempHealth]);
+				healthBarContainer.enter()
+					.append('g')
+					.classed('tempBar', true);
+				healthBarContainer.exit().remove();
+
+				var tempHealthBorder = healthBarContainer.selectAll('rect.border').data([tempHealth]);
+				tempHealthBorder.enter()
+					.append('rect')
+					.classed('border', true)
+					.attr('width', width + border)
+					.attr('height', height + border)
+					.attr('x', buffer).attr('y', buffer)
+					.attr('rx', 5).attr('ry', 5)
+					.attr('fill', 'none')
+					.attr('stroke', '#5AA1BF')
+					.attr('stroke-width', border);
+				tempHealthBorder.transition()
+					.attr('stroke-opacity', (tempHealth / maxHealth));
+				tempHealthBorder.exit().remove();
+
+				var healthFill = healthBarContainer.selectAll('rect.fill').data([tempHealth]);
+				healthFill.enter()
+					.append('rect')
+					.classed('fill', true)
+					.attr('clip-path', 'url(' + $location.absUrl() + '#' + healthBarClip + ')')
+					.attr('width', width)
+					.attr('height', height)
+					.attr('x', buffer + border/2).attr('y', buffer + border/2)
+					//.attr('rx', 5).attr('ry', 5)
+					.attr('fill', 'red')
+					.attr('stroke', 'darkgrey')
+					.attr('stroke-widht', 1);
+				healthFill.exit().remove();
+
+				var healthOutline = healthBarContainer.selectAll('rect.outline').data([currentHealth]);
+				healthOutline.enter()
+					.append('rect')
+					.classed('outline', true)
+					.attr('width', width)
+					.attr('height', height)
+					.attr('x', buffer + border/2).attr('y', buffer + border/2)
+					//.attr('rx', 5).attr('ry', 5)
+					.attr('fill', 'none')
+					.attr('stroke', 'darkgrey')
+					.attr('stroke-widht', 1);
+				healthOutline.exit().remove();
+
+				var healthText = healthBarContainer.selectAll('text').data([maxHealth, currentHealth, tempHealth]);
+				healthText.enter()
+					.append('text')
+					.attr('x', (width/2) + buffer + (border/2))
+					.attr('y', (height/2) + buffer + (border/2) + (fontSize/2))
+					.attr('text-anchor', 'middle');
+				healthText.transition()
+					.text('Health: ' + currentHealth.toString() +
+						' / ' + maxHealth.toString() +
+						' (' + tempHealth.toString() + ')');
+				healthText.exit().remove();
+			}
+
+			scope.$watch('health', function (health) {
+				if(health) {
+					render(health.max, health.current, health.temp);
+				}
+			}, true);
+		}
+	}
 }]);
 
 //===== SERVICES =====//
