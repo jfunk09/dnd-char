@@ -113,24 +113,45 @@ app.controller('characterListCtrl', ['$scope', 'characterService', '$state',
 		};
 	}]);
 
-app.controller('characterPageCtrl', ['$scope', '$stateParams', 'characterService',
-	function ($scope, $stateParams, characterService) {
+app.controller('characterPageCtrl', ['$scope', '$stateParams', 'characterService', 'spellService', '_',
+	function ($scope, $stateParams, characterService, spellService, _) {
 		$scope.character = {};
+		$scope.allSpells = [];
+		$scope.modalSpell = null;
 		characterService.fetchCharacter($stateParams.id)
 			.then(function (result) {
 				$scope.character = result.data;
-				updatePage();
 			});
+
+		spellService.fetchSpellList()
+			.then(function (result) {
+				$scope.allSpells = result.data;
+				console.log('spells', result.data);
+			});
+
+		$scope.addSpellToCharacter = function (id) {
+			if (_.indexOf($scope.character.spells, id) === -1) {
+				$scope.character.spells.push(id);
+			}
+		};
+		$scope.removeSpellFromCharacter = function (id) {
+			var index = _.indexOf($scope.character.spells, id);
+			if (index !== -1) {
+				$scope.character.spells.splice(index, 1);
+			}
+		};
+		$scope.spellFromId = function (id) {
+			return _.findWhere($scope.allSpells, {dbID: id});
+		};
+		$scope.openSpellModal = function (id) {
+			$scope.modalSpell = $scope.spellFromId(id);
+			$('#spellModal').modal('show');
+		};
 
 		$scope.$watch('character', function (character) {
 			if (!character) { return; }
 			characterService.updateCharacter($stateParams.id, character);
-			updatePage();
 		}, true);
-
-		function updatePage() {
-
-		}
 	}]);
 
 app.controller('addCtrl', ['$scope', 'characterService',
@@ -162,14 +183,24 @@ app.controller('spellManagerCtrl', ['$scope', 'spellService', '$',
 		fetchSpells();
 
 		$scope.addSpell = function () {
-			spellService.addSpell($scope.newSpell);
+			spellService.addSpell($scope.newSpell)
+				.then(function () {
+					fetchSpells();
+				});
 			$('#addSpellModal').modal('hide');
-			fetchSpells();
+		};
+		$scope.deleteSpell = function (spell) {
+			spellService.deleteSpell(spell.dbID)
+				.then(function () {
+					fetchSpells();
+				});
 		};
 		$scope.updateSpell = function () {
-			spellService.updateSpell($scope.editSpell.dbID, $scope.editSpell);
+			spellService.updateSpell($scope.editSpell.dbID, $scope.editSpell)
+				.then(function () {
+					fetchSpells();
+				});
 			$('#editSpellModal').modal('hide');
-			fetchSpells();
 		};
 		$scope.openEditModal = function (spell) {
 			$scope.editSpell = spell;
@@ -341,7 +372,7 @@ app.service('characterService', ['$http', function ($http) {
 app.service('spellService', ['$http', function ($http) {
 	return {
 		fetchSpell: function (id) {
-
+			return $http.get('/api/getSpell?id=' + id);
 		},
 		fetchSpellList: function () {
 			return $http.get('/api/allSpells');
@@ -352,6 +383,9 @@ app.service('spellService', ['$http', function ($http) {
 		updateSpell: function (id, params) {
 			var postParams = {dbID: id, params: params};
 			return $http.post('/api/updateSpell', postParams);
+		},
+		deleteSpell: function (id) {
+			return $http.get('/api/deleteSpell?id=' + id);
 		}
 	}
 }]);

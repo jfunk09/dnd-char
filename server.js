@@ -21,6 +21,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 
 var dbUrl = 'mongodb://localhost:27017/dndChar';
 
+// Character API
 app.get('/api/getCharacter', function (req, res) {
 	mongo.connect(dbUrl, function (err, db) {
 		if (err) {
@@ -45,7 +46,7 @@ app.get('/api/getCharacter', function (req, res) {
 			db.close();
 			res.send('error try/catch');
 		}
-	})
+	});
 });
 
 app.get('/api/characters', function (req, res) {
@@ -122,6 +123,34 @@ app.post('/api/updateCharacter', function (req, res) {
 	});
 });
 
+// Spell API
+app.get('/api/getSpell', function (req, res) {
+	mongo.connect(dbUrl, function (err, db) {
+		if (err) {
+			db.close();
+			res.send('error connecting');
+			return;
+		}
+		var cs = db.collection('characters');
+		var id = null;
+		try {
+			id = ObjectID.createFromHexString(req.query.id);
+			cs.findOne({_id: id}, function (err, result) {
+				if (err) {
+					db.close();
+					res.send('error finding');
+					return;
+				}
+				db.close();
+				res.send(new Spell(result));
+			});
+		} catch (e) {
+			db.close();
+			res.send('error try/catch');
+		}
+	});
+});
+
 app.get('/api/allSpells', function (req, res) {
 	mongo.connect(dbUrl, function (err, db) {
 		if (err) {
@@ -129,10 +158,10 @@ app.get('/api/allSpells', function (req, res) {
 			res.send('error');
 			return;
 		}
-		var spellCollection = db.collection('spells');
+		var sc = db.collection('spells');
 		var spells = [];
 
-		var stream = spellCollection.find().stream();
+		var stream = sc.find().stream();
 		stream.on('data', function (data) {
 			var spell = new Spell(data);
 			spells.push(spell.toJSON());
@@ -144,6 +173,33 @@ app.get('/api/allSpells', function (req, res) {
 	});
 });
 
+app.get('/api/deleteSpell', function (req, res) {
+	mongo.connect(dbUrl, function (err, db) {
+		if (err) {
+			db.close();
+			res.send('error connecting');
+			return;
+		}
+		var sc = db.collection('spells');
+		var id = null;
+		try {
+			id = ObjectID.createFromHexString(req.query.id);
+			sc.remove({_id: id}, function (err) {
+				if (err) {
+					db.close();
+					res.send('error removing');
+					return;
+				}
+				db.close();
+				res.sendStatus(200);
+			});
+		} catch (e) {
+			db.close();
+			res.send('error try/catch');
+		}
+	});
+});
+
 app.post('/api/addSpell', function (req, res) {
 	var spell = new Spell(req.body);
 	mongo.connect(dbUrl, function (err, db) {
@@ -152,8 +208,8 @@ app.post('/api/addSpell', function (req, res) {
 			res.send('error');
 			return;
 		}
-		var cc = db.collection('spells');
-		cc.insert(spell.toJSON(), {w:1}, function (err, result) {
+		var sc = db.collection('spells');
+		sc.insert(spell.toJSON(), {w:1}, function (err, result) {
 			console.log('Insert Spell', result);
 			db.close();
 			res.sendStatus(200);
@@ -196,6 +252,7 @@ app.post('/api/updateSpell', function (req, res) {
 	});
 });
 
+// Other Stuff
 app.get('/*', function (req, res) {
     res.sendFile('views/index.html', { root: __dirname });
 });
