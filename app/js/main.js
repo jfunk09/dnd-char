@@ -79,26 +79,27 @@ app.config(['$stateProvider', '$urlRouterProvider', '$locationProvider', functio
 
 //===== CONTROLLERS =====//
 
-app.controller('mainMenuCtrl', ['$scope', '$state', '$rootScope', '_', function ($scope, $state, $rootScope, _) {
-	$scope.menuTabs = [
-		{number: 0, title: 'Home', state: 'app'},
-		{number: 1, title: 'Character List', state: 'app.characterList'},
-		{number: 2, title: 'Spell Manager', state: 'app.spellManager'},
-		{number: 3, title: 'Item Manager', state: 'app.itemManager'}
-	];
-	var initialTab = _.findWhere($scope.menuTabs, {state: $state.current.name});
-	$scope.activeTab = initialTab ? initialTab.number : -1;
+app.controller('mainMenuCtrl', ['$scope', '$state', '$rootScope', '_',
+	function ($scope, $state, $rootScope, _) {
+		$scope.menuTabs = [
+			{number: 0, title: 'Home', state: 'app'},
+			{number: 1, title: 'Character List', state: 'app.characterList'},
+			{number: 2, title: 'Spell Manager', state: 'app.spellManager'},
+			{number: 3, title: 'Item Manager', state: 'app.itemManager'}
+		];
+		var initialTab = _.findWhere($scope.menuTabs, {state: $state.current.name});
+		$scope.activeTab = initialTab ? initialTab.number : -1;
 
-	$scope.goTo =function (tab) {
-		$scope.activeTab = tab.number;
-		$state.go(tab.state);
-	};
+		$scope.goTo =function (tab) {
+			$scope.activeTab = tab.number;
+			$state.go(tab.state);
+		};
 
-	$rootScope.$on('$stateChangeSuccess', function (event, toState, toParams, fromState, fromParams) {
-		var newTab = _.findWhere($scope.menuTabs, {state: toState.name});
-		$scope.activeTab = newTab ? newTab.number : -1;
-	});
-}]);
+		$rootScope.$on('$stateChangeSuccess', function (event, toState, toParams, fromState, fromParams) {
+			var newTab = _.findWhere($scope.menuTabs, {state: toState.name});
+			$scope.activeTab = newTab ? newTab.number : -1;
+		});
+	}]);
 
 app.controller('characterListCtrl', ['$scope', 'characterService', '$state', '$',
 	function ($scope, characterService, $state, $) {
@@ -165,8 +166,9 @@ app.controller('characterPageCtrl', ['$scope', '$stateParams', '_', 'characterSe
 		}
 		function updateCharacterItems() {
 			if ($scope.character && $scope.character.inventory) {
-				$scope.characterItems = _.filter($scope.allItems, function (item) {
-					return _.indexOf($scope.character.inventory, item.dbID) >= 0;
+				$scope.characterItems = _.map($scope.character.inventory, function (characterItem) {
+					var item = _.findWhere($scope.allItems, {dbID: characterItem.id});
+					return {item: item, quantity: characterItem.quantity};
 				});
 			}
 		}
@@ -174,7 +176,8 @@ app.controller('characterPageCtrl', ['$scope', '$stateParams', '_', 'characterSe
 			return _.findWhere($scope.allSpells, {dbID: id});
 		}
 		function itemFromId(id) {
-			return _.findWhere($scope.allItems, {dbID: id});
+			var item = _.findWhere($scope.allItems, {dbID: id});
+			return _.findWhere($scope.characterItems, {item: item});
 		}
 
 		characterService.fetchCharacter($stateParams.id)
@@ -223,11 +226,12 @@ app.controller('characterPageCtrl', ['$scope', '$stateParams', '_', 'characterSe
 
 		$scope.addItemToCharacter = function (id) {
 			if (_.indexOf($scope.character.inventory, id) === -1) {
-				$scope.character.inventory.push(id);
+				$scope.character.inventory.push({id: id, quantity: '1'});
 			}
 		};
 		$scope.removeItemFromCharacter = function (id) {
-			var index = _.indexOf($scope.character.inventory, id);
+			var entry = _.findWhere($scope.character.inventory, {id: id});
+			var index = _.indexOf($scope.character.inventory, entry);
 			if (index !== -1) {
 				$scope.character.inventory.splice(index, 1);
 			}
@@ -237,6 +241,15 @@ app.controller('characterPageCtrl', ['$scope', '$stateParams', '_', 'characterSe
 			$('#itemModal').modal('show');
 		};
 
+		$scope.$watch('modalItem.quantity', function (quantity) {
+			if(!$scope.modalItem) { return; }
+			var id = $scope.modalItem.item.dbID;
+			_.each($scope.character.inventory, function (characterItem) {
+				if(characterItem.id === id) {
+					characterItem.quantity = quantity;
+				}
+			});
+		});
 		$scope.$watch('character', function (character) {
 			if (!character) { return; }
 			characterService.updateCharacter($stateParams.id, character)

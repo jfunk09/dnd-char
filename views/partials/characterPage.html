@@ -41,8 +41,8 @@
             Inventory:
             <ul>
                 <li ng-repeat="characterItem in characterItems | orderBy:'name'">
-                    <button type="button" class="btn btn-default" ng-click="openItemModal(characterItem.dbID)">{{characterItem.name}}</button>
-                    <button type="button" class="btn btn-xs btn-danger" ng-click="removeItemFromCharacter(characterItem.dbID)">Remove</button>
+                    <button type="button" class="btn btn-default" ng-click="openItemModal(characterItem.item.dbID)">{{characterItem.item.name}} ({{characterItem.quantity}})</button>
+                    <button type="button" class="btn btn-xs btn-danger" ng-click="removeItemFromCharacter(characterItem.item.dbID)">Remove</button>
                 </li>
                 <li>
                     <div class="dropdown">
@@ -111,14 +111,14 @@
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header center-text">
-                <h4 class="modal-title" id="itemLabel">{{modalItem.name}}</h4>
+                <h4 class="modal-title" id="itemLabel">{{modalItem.item.name}} (<editable-field field-value="modalItem.quantity"></editable-field>)</h4>
             </div>
             <div class="modal-body">
                 <div>
-                    Weight: {{modalItem.weight}}
+                    Weight: {{modalItem.item.weight}}
                 </div>
                 <div>
-                    Description: {{modalItem.description}}
+                    Description: {{modalItem.item.description}}
                 </div>
             </div>
         </div>
