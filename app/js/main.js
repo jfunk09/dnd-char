@@ -126,8 +126,19 @@ app.controller('characterPageCtrl', ['$scope', '$stateParams', 'characterService
 		spellService.fetchSpellList()
 			.then(function (result) {
 				$scope.allSpells = result.data;
-				console.log('spells', result.data);
 			});
+
+		$scope.spellSubtitle = function () {
+			var spell = $scope.modalSpell;
+			if (!spell) { return; }
+			var prefix = '', suffix = '';
+			if (spell.level > 0) {
+				prefix = 'Level ' + spell.level.toString() + ' ';
+			} else if (spell.level === 0) {
+				suffix = ' Cantrip';
+			}
+			return prefix + spell.type + suffix;
+		};
 
 		$scope.addSpellToCharacter = function (id) {
 			if (_.indexOf($scope.character.spells, id) === -1) {
@@ -254,8 +265,20 @@ app.directive('healthDisplay', ['$', '_', '$location', function ($, _, $location
 		},
 		template: '',
 		link: function postLink(scope, elements, attrs) {
+			var fullHealthColor = [34, 138, 0];
+			var lowHealthColor = [176, 0, 0];
 
-			var width = _.parseInt(scope.width), height = 50, border = 8, buffer = 16, fontSize = 12;
+			function colorByHealth() {
+				var fullMod = scope.health.current / scope.health.max;
+				var lowMod = 1 - fullMod;
+				var color = _.map([0, 0, 0], function (element, index) {
+					return Math.ceil((fullMod * fullHealthColor[index]) + (lowMod * lowHealthColor[index]));
+				});
+				return 'rgb(' + color[0].toString() + ',' + color[1].toString() + ',' + color[2].toString() + ')';
+			}
+
+			var width = _.parseInt(scope.width), height = 50, border = 8, buffer = 16, fontSize = 12,
+				tempHealthColor = '#5AA1BF', healthBorderColor = 'darkgrey';
 			var wrapper = d3.select(elements[0])
 				.append('svg')
 				.classed('healthDisplay', true)
@@ -296,13 +319,13 @@ app.directive('healthDisplay', ['$', '_', '$location', function ($, _, $location
 					.attr('x', buffer).attr('y', buffer)
 					.attr('rx', 5).attr('ry', 5)
 					.attr('fill', 'none')
-					.attr('stroke', '#5AA1BF')
+					.attr('stroke', tempHealthColor)
 					.attr('stroke-width', border);
 				tempHealthBorder.transition()
 					.attr('stroke-opacity', (tempHealth / maxHealth));
 				tempHealthBorder.exit().remove();
 
-				var healthFill = healthBarContainer.selectAll('rect.fill').data([tempHealth]);
+				var healthFill = healthBarContainer.selectAll('rect.fill').data([currentHealth]);
 				healthFill.enter()
 					.append('rect')
 					.classed('fill', true)
@@ -310,9 +333,10 @@ app.directive('healthDisplay', ['$', '_', '$location', function ($, _, $location
 					.attr('width', width)
 					.attr('height', height)
 					.attr('x', buffer + border/2).attr('y', buffer + border/2)
-					.attr('fill', 'red')
-					.attr('stroke', 'darkgrey')
-					.attr('stroke-widht', 1);
+					.attr('fill', colorByHealth())
+					.attr('stroke', 'none');
+				healthFill.transition()
+					.attr('fill', colorByHealth())
 				healthFill.exit().remove();
 
 				var healthOutline = healthBarContainer.selectAll('rect.outline').data([currentHealth]);
@@ -323,8 +347,8 @@ app.directive('healthDisplay', ['$', '_', '$location', function ($, _, $location
 					.attr('height', height)
 					.attr('x', buffer + border/2).attr('y', buffer + border/2)
 					.attr('fill', 'none')
-					.attr('stroke', 'darkgrey')
-					.attr('stroke-widht', 1);
+					.attr('stroke', healthBorderColor)
+					.attr('stroke-width', 1);
 				healthOutline.exit().remove();
 
 				var healthText = healthBarContainer.selectAll('text').data([maxHealth, currentHealth, tempHealth]);
