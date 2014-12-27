@@ -1,6 +1,6 @@
 <div class="col-md-12">
 	<ul>
-		<li ng-repeat="spell in allSpells track by $index">
+		<li ng-repeat="spell in allSpells | orderBy:['level','name']">
 			<button type="button" class="btn btn-default" ng-click="openEditModal(spell)">{{spell.name}}</button>
 			<button type="button" class="btn btn-danger" ng-click="deleteSpell(spell)">Delete Spell</button>
 		</li>
@@ -15,7 +15,7 @@
 	<div class="modal-dialog">
 		<div class="modal-content">
 			<div class="modal-header">
-				<h4 class="modal-title" id="newSpellLabel">Add New Spell</h4>
+				<h4 class="modal-title center-text" id="newSpellLabel">Add New Spell</h4>
 			</div>
 			<div class="modal-body">
 				<div>
@@ -58,7 +58,7 @@
 					<textarea rows="2" cols="50" ng-model="newSpell.additionalLevelMod"></textarea>
 				</div>
 			</div>
-			<div class="modal-footer">
+			<div class="modal-footer center-text">
 				<button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
 				<button type="button" class="btn btn-primary" ng-click="addSpell()">Add Spell</button>
 			</div>
@@ -70,8 +70,8 @@
 <div class="modal fade" id="editSpellModal" role="dialog" aria-labelledby="editSpellLabel" aria-hidden="true">
 	<div class="modal-dialog">
 		<div class="modal-content">
-			<div class="modal-header">
-				<h4 class="modal-title" id="editSpellLabel">Add New Spell</h4>
+			<div class="modal-header center-text">
+				<h4 class="modal-title" id="editSpellLabel">Edit Spell</h4>
 			</div>
 			<div class="modal-body">
 				<div>
@@ -114,7 +114,7 @@
 					<textarea rows="2" cols="50" ng-model="editSpell.additionalLevelMod"></textarea>
 				</div>
 			</div>
-			<div class="modal-footer">
+			<div class="modal-footer center-text">
 				<button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
 				<button type="button" class="btn btn-primary" ng-click="updateSpell()">Edit Spell</button>
 			</div>

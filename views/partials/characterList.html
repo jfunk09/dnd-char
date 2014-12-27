@@ -1,9 +1,58 @@
-<div class='col-md-12'>
+<div class="col-md-12">
 	<ul>
-		<li ng-repeat='char in characters track by $index'>{{char.name}}
-			<span ng-if='char.race'> {{char.race}}</span>
-			<span ng-if='char.charClass'> {{char.charClass}}</span>
-			<button ng-click='goToCharacter(char.dbID)'>get</button>
+		<li ng-repeat="character in characters | orderBy:'name'">
+			<button type="button" class="btn btn-default" ng-click="goToCharacter(character.dbID)">{{character.name}}</button>
+			<button type="button" class="btn btn-danger" ng-click="confirmDeleteModal(character)">Delete</button>
+		</li>
+		<li>
+			<button type="button" class="btn btn-primary" ng-click="openCreateModal()">+</button>
 		</li>
 	</ul>
+</div>
+
+
+<!-- Add Character Modal -->
+<div class="modal fade" id="newCharacterModal" role="dialog" aria-labelledby="newCharacterLabel" aria-hidden="true">
+	<div class="modal-dialog">
+		<div class="modal-content">
+			<div class="modal-header">
+				<h4 class="modal-title center-text" id="newCharacterLabel">Create New Character</h4>
+			</div>
+			<div class="modal-body">
+				<div>
+					Name: <input type="text" ng-model="newCharacter.name"/>
+				</div>
+				<div>
+					Race: <input type="text" ng-model="newCharacter.race"/>
+				</div>
+				<div>
+					Class: <input type="text" ng-model="newCharacter.charClass"/>
+				</div>
+			</div>
+			<div class="modal-footer center-text">
+				<button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+				<button type="button" class="btn btn-primary" ng-click="createCharacter()">Create</button>
+			</div>
+		</div>
+	</div>
+</div>
+
+<!-- Delete Character Modal -->
+<div class="modal fade" id="deleteCharacterModal" role="dialog" aria-labelledby="deleteCharacterLabel" aria-hidden="true">
+	<div class="modal-dialog">
+		<div class="modal-content">
+			<div class="modal-header center-text">
+				<h4 class="modal-title" id="deleteCharacterLabel">Delete {{characterToDelete.name}}?</h4>
+			</div>
+			<div class="modal-body center-text">
+				<h5>Warning, deleting this character is permanent and irreversible!</h5>
+			</div>
+			<div class="modal-footer center-text">
+				<button type="button" class="btn btn-primary" ng-click="cancelDelete()">Cancel</button>
+				<button type="button" class="btn btn-danger" ng-click="deleteCharacter()">
+					I'm sure I want to delete {{characterToDelete.name}} forever
+				</button>
+			</div>
+		</div>
+	</div>
 </div>

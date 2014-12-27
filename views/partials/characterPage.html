@@ -9,9 +9,9 @@
     <div>
         Spells:
         <ul>
-            <li ng-repeat="characterSpell in character.spells track by $index">
-                <button type="button" class="btn btn-default" ng-click="openSpellModal(characterSpell)">{{spellFromId(characterSpell).name}}</button>
-                <button type="button" class="btn btn-danger" ng-click="removeSpellFromCharacter(characterSpell)">Remove</button>
+            <li ng-repeat="characterSpell in characterSpells | orderBy:['level','name']">
+                <button type="button" class="btn btn-default" ng-click="openSpellModal(characterSpell.dbID)">{{characterSpell.name}}</button>
+                <button type="button" class="btn btn-danger" ng-click="removeSpellFromCharacter(characterSpell.dbID)">Remove</button>
             </li>
             <li>
                 <div class="dropdown">
@@ -20,7 +20,7 @@
                         <span class="caret"></span>
                     </button>
                     <ul class="dropdown-menu" role="menu" aria-labelledby="addSpellDropdown">
-                        <li ng-repeat="spell in allSpells" role="presentation">
+                        <li ng-repeat="spell in allSpells | orderBy:['level','name']" role="presentation">
                             <a role="menuitem" ng-click="addSpellToCharacter(spell.dbID)">{{spell.name}}</a>
                         </li>
                     </ul>
@@ -35,7 +35,7 @@
 <div class="modal fade" id="spellModal" role="dialog" aria-labelledby="spellLabel" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
-            <div class="modal-header">
+            <div class="modal-header center-text">
                 <h4 class="modal-title" id="spellLabel">{{modalSpell.name}} &mdash; {{spellSubtitle()}}</h4>
             </div>
             <div class="modal-body">

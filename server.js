@@ -71,6 +71,33 @@ app.get('/api/characters', function (req, res) {
 	});
 });
 
+app.get('/api/deleteCharacter', function (req, res) {
+	mongo.connect(dbUrl, function (err, db) {
+		if (err) {
+			db.close();
+			res.send('error connecting');
+			return;
+		}
+		var cc = db.collection('characters');
+		var id = null;
+		try {
+			id = ObjectID.createFromHexString(req.query.id);
+			cc.remove({_id: id}, function (err) {
+				if (err) {
+					db.close();
+					res.send('error removing');
+					return;
+				}
+				db.close();
+				res.sendStatus(200);
+			});
+		} catch (e) {
+			db.close();
+			res.send('error try/catch');
+		}
+	});
+});
+
 app.post('/api/addCharacter', function (req, res) {
 	var character = new Character(req.body);
 	mongo.connect(dbUrl, function (err, db) {
