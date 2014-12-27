@@ -65,6 +65,15 @@ app.config(['$stateProvider', '$urlRouterProvider', '$locationProvider', functio
 					controller: 'addCtrl'
 				}
 			}
+		})
+		.state('app.spellManager', {
+			url: '/spellManager',
+			views: {
+				'content@': {
+					templateUrl: 'partials/spellManager.html',
+					controller: 'spellManagerCtrl'
+				}
+			}
 		});
 }]);
 
@@ -74,7 +83,8 @@ app.controller('mainMenuCtrl', ['$scope', '$state', '$rootScope', '_', function 
 	$scope.menuTabs = [
 		{number: 0, title: 'Home', state: 'app'},
 		{number: 1, title: 'List', state: 'app.characterList'},
-		{number: 2, title: 'Add Character', state: 'app.createCharacter'}
+		{number: 2, title: 'Add Character', state: 'app.createCharacter'},
+		{number: 3, title: 'Spell Manager', state: 'app.spellManager'}
 	];
 	var initialTab = _.findWhere($scope.menuTabs, {state: $state.current.name});
 	$scope.activeTab = initialTab ? initialTab.number : -1;
@@ -90,7 +100,7 @@ app.controller('mainMenuCtrl', ['$scope', '$state', '$rootScope', '_', function 
 	});
 }]);
 
-app.controller('characterListCtrl', ['$scope', 'characterService', '$state', '$q',
+app.controller('characterListCtrl', ['$scope', 'characterService', '$state',
 	function ($scope, characterService, $state) {
 		$scope.characters = [];
 		characterService.fetchCharacterList()
@@ -135,6 +145,41 @@ app.controller('addCtrl', ['$scope', 'characterService',
 					console.log('character added: ', data);
 				});
 		};
+	}]);
+
+app.controller('spellManagerCtrl', ['$scope', 'spellService', '$',
+	function ($scope, spellService, $) {
+		$scope.allSpells = [];
+		$scope.newSpell = {};
+		$scope.editSpell = null;
+		var fetchSpells = function () {
+			spellService.fetchSpellList()
+				.then(function (results) {
+					console.log('all spells', results.data);
+					$scope.allSpells = results.data;
+				});
+		};
+		fetchSpells();
+
+		$scope.addSpell = function () {
+			spellService.addSpell($scope.newSpell);
+			$('#addSpellModal').modal('hide');
+			fetchSpells();
+		};
+		$scope.updateSpell = function () {
+			spellService.updateSpell($scope.editSpell.dbID, $scope.editSpell);
+			$('#editSpellModal').modal('hide');
+			fetchSpells();
+		};
+		$scope.openEditModal = function (spell) {
+			$scope.editSpell = spell;
+			$('#editSpellModal').modal('show');
+		};
+		$scope.openNewModal = function () {
+			$scope.newSpell = {};
+			$('#addSpellModal').modal('show');
+		};
+
 	}]);
 
 //===== DIRECTIVES =====//
@@ -234,7 +279,6 @@ app.directive('healthDisplay', ['$', '_', '$location', function ($, _, $location
 					.attr('width', width)
 					.attr('height', height)
 					.attr('x', buffer + border/2).attr('y', buffer + border/2)
-					//.attr('rx', 5).attr('ry', 5)
 					.attr('fill', 'red')
 					.attr('stroke', 'darkgrey')
 					.attr('stroke-widht', 1);
@@ -247,7 +291,6 @@ app.directive('healthDisplay', ['$', '_', '$location', function ($, _, $location
 					.attr('width', width)
 					.attr('height', height)
 					.attr('x', buffer + border/2).attr('y', buffer + border/2)
-					//.attr('rx', 5).attr('ry', 5)
 					.attr('fill', 'none')
 					.attr('stroke', 'darkgrey')
 					.attr('stroke-widht', 1);
@@ -277,7 +320,7 @@ app.directive('healthDisplay', ['$', '_', '$location', function ($, _, $location
 
 //===== SERVICES =====//
 
-app.service('characterService', ['$http', '_', function ($http, _) {
+app.service('characterService', ['$http', function ($http) {
 	return {
 		fetchCharacter: function (id) {
 			return $http.get('/api/getCharacter?id=' + id);
@@ -293,4 +336,22 @@ app.service('characterService', ['$http', '_', function ($http, _) {
 			return $http.post('/api/updateCharacter', postParams);
 		}
 	};
+}]);
+
+app.service('spellService', ['$http', function ($http) {
+	return {
+		fetchSpell: function (id) {
+
+		},
+		fetchSpellList: function () {
+			return $http.get('/api/allSpells');
+		},
+		addSpell: function (params) {
+			return $http.post('/api/addSpell', params);
+		},
+		updateSpell: function (id, params) {
+			var postParams = {dbID: id, params: params};
+			return $http.post('/api/updateSpell', postParams);
+		}
+	}
 }]);

@@ -1,0 +1,120 @@
+<div class="col-md-12">
+	<button type="button" class="btn btn-primary" ng-click="openNewModal()">Add New Spell</button>
+	<ul>
+		<li ng-repeat="spell in allSpells track by $index">
+			<button type="button" class="btn" ng-click="openEditModal(spell)">{{spell.name}}</button>
+		</li>
+	</ul>
+</div>
+
+<!-- Add Spell Modal -->
+<div class="modal fade" id="addSpellModal" role="dialog" aria-labelledby="newSpellLabel" aria-hidden="true">
+	<div class="modal-dialog">
+		<div class="modal-content">
+			<div class="modal-header">
+				<h4 class="modal-title" id="newSpellLabel">Add New Spell</h4>
+			</div>
+			<div class="modal-body">
+				<div>
+					Spell Name: <input type="text" ng-model="newSpell.name"/>
+				</div>
+				<div>
+					Spell Level: <input type="number" ng-model="newSpell.level"/>
+				</div>
+				<div>
+					Spell Type: <input type="text" ng-model="newSpell.type"/>
+				</div>
+				<div>
+					Casting Time: <input type="text" ng-model="newSpell.castingTime"/>
+				</div>
+				<div>
+					Range: <input type="text" ng-model="newSpell.range"/>
+				</div>
+				<div>
+					Components: -Verbal: <input type="checkbox" ng-model="newSpell.components.verbal"/>
+					-Somatic: <input type="checkbox" ng-model="newSpell.components.somatic"/>
+					-Material: <input type="text" ng-model="newSpell.components.material"/>
+				</div>
+				<div>
+					Duration: <input type="text" ng-model="newSpell.duration"/>
+				</div>
+				<div>
+					Concentration: <input type="checkbox" ng-model="newSpell.concentration"/>
+					Ritual: <input type="checkbox" ng-model="newSpell.ritual"/>
+				</div>
+				<div>
+					Description:
+				</div>
+				<div>
+					<textarea rows="4" cols="50" ng-model="newSpell.description"></textarea>
+				</div>
+				<div>
+					Additional Level Modifier:
+				</div>
+				<div>
+					<textarea rows="2" cols="50" ng-model="newSpell.additionalLevelMod"></textarea>
+				</div>
+			</div>
+			<div class="modal-footer">
+				<button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+				<button type="button" class="btn btn-primary" ng-click="addSpell()">Add Spell</button>
+			</div>
+		</div>
+	</div>
+</div>
+
+<!-- Edit Spell Modal -->
+<div class="modal fade" id="editSpellModal" role="dialog" aria-labelledby="editSpellLabel" aria-hidden="true">
+	<div class="modal-dialog">
+		<div class="modal-content">
+			<div class="modal-header">
+				<h4 class="modal-title" id="editSpellLabel">Add New Spell</h4>
+			</div>
+			<div class="modal-body">
+				<div>
+					Spell Name: <input type="text" ng-model="editSpell.name"/>
+				</div>
+				<div>
+					Spell Level: <input type="number" ng-model="editSpell.level"/>
+				</div>
+				<div>
+					Spell Type: <input type="text" ng-model="editSpell.type"/>
+				</div>
+				<div>
+					Casting Time: <input type="text" ng-model="editSpell.castingTime"/>
+				</div>
+				<div>
+					Range: <input type="text" ng-model="editSpell.range"/>
+				</div>
+				<div>
+					Components: -Verbal: <input type="checkbox" ng-model="editSpell.components.verbal"/>
+					-Somatic: <input type="checkbox" ng-model="editSpell.components.somatic"/>
+					-Material: <input type="text" ng-model="editSpell.components.material"/>
+				</div>
+				<div>
+					Duration: <input type="text" ng-model="editSpell.duration"/>
+				</div>
+				<div>
+					Concentration: <input type="checkbox" ng-model="editSpell.concentration"/>
+					Ritual: <input type="checkbox" ng-model="editSpell.ritual"/>
+				</div>
+				<div>
+					Description:
+				</div>
+				<div>
+					<textarea rows="4" cols="50" ng-model="editSpell.description"></textarea>
+				</div>
+				<div>
+					Additional Level Modifier:
+				</div>
+				<div>
+					<textarea rows="2" cols="50" ng-model="editSpell.additionalLevelMod"></textarea>
+				</div>
+			</div>
+			<div class="modal-footer">
+				<button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+				<button type="button" class="btn btn-primary" ng-click="updateSpell()">Edit Spell</button>
+			</div>
+		</div>
+	</div>
+</div>

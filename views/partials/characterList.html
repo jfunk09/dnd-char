@@ -1,6 +1,6 @@
 <div class='col-md-12'>
 	<ul>
-		<li ng-repeat='char in characters'>{{char.name}}
+		<li ng-repeat='char in characters track by $index'>{{char.name}}
 			<span ng-if='char.race'> {{char.race}}</span>
 			<span ng-if='char.charClass'> {{char.charClass}}</span>
 			<button ng-click='goToCharacter(char.dbID)'>get</button>

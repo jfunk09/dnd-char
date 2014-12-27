@@ -6,6 +6,7 @@ var mongo = require('mongodb').MongoClient;
 var ObjectID = require('mongodb').ObjectID;
 var Binary = require('mongodb').Binary;
 var Character = require('./lib/character.js');
+var Spell = require('./lib/spell.js');
 
 app.engine('html', require('ejs-locals'));
 app.set('view engine', 'html');
@@ -99,6 +100,80 @@ app.post('/api/updateCharacter', function (req, res) {
 			return;
 		}
 		var cc = db.collection('characters');
+
+		var id = null;
+		try {
+			id = ObjectID.createFromHexString(req.body.dbID);
+		} catch (e) {
+			db.close();
+			res.send('error try/catch');
+			return;
+		}
+
+		cc.update({_id: id}, {$set: params}, {w:1}, function (err, result) {
+			if(err) {
+				console.log('error updating:', err);
+				db.close();
+				res.send('update error');
+			}
+			db.close();
+			res.sendStatus(200);
+		});
+	});
+});
+
+app.get('/api/allSpells', function (req, res) {
+	mongo.connect(dbUrl, function (err, db) {
+		if (err) {
+			db.close();
+			res.send('error');
+			return;
+		}
+		var spellCollection = db.collection('spells');
+		var spells = [];
+
+		var stream = spellCollection.find().stream();
+		stream.on('data', function (data) {
+			var spell = new Spell(data);
+			spells.push(spell.toJSON());
+		});
+		stream.on('end', function () {
+			db.close();
+			res.send(spells);
+		});
+	});
+});
+
+app.post('/api/addSpell', function (req, res) {
+	var spell = new Spell(req.body);
+	mongo.connect(dbUrl, function (err, db) {
+		if (err) {
+			db.close();
+			res.send('error');
+			return;
+		}
+		var cc = db.collection('spells');
+		cc.insert(spell.toJSON(), {w:1}, function (err, result) {
+			console.log('Insert Spell', result);
+			db.close();
+			res.sendStatus(200);
+		});
+	});
+});
+
+app.post('/api/updateSpell', function (req, res) {
+	var params = req.body.params;
+	if (_.isEmpty(params)) {
+		res.sendStatus(200);
+		return;
+	}
+	mongo.connect(dbUrl, function (err, db) {
+		if (err) {
+			db.close();
+			res.send('error');
+			return;
+		}
+		var cc = db.collection('spells');
 
 		var id = null;
 		try {
