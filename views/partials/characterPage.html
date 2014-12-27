@@ -1,37 +1,69 @@
 <div class="col-md-12">
-    <div>Name : <editable-field field-value="character.name"></editable-field></div>
-    <div>Class : <editable-field field-value="character.charClass"></editable-field></div>
-    <div>Race : <editable-field field-value="character.race"></editable-field></div>
-    <div>Max Health : <editable-field field-value="character.health.max"></editable-field></div>
-    <div>Current Health : <editable-field field-value="character.health.current"></editable-field></div>
-    <div>Temp Health : <editable-field field-value="character.health.temp"></editable-field></div>
-    <health-display health="character.health" width="300"></health-display>
-    <div>
-        Spells:
-        <ul>
-            <li ng-repeat="characterSpell in characterSpells | orderBy:['level','name']">
-                <button type="button" class="btn btn-default" ng-click="openSpellModal(characterSpell.dbID)">{{characterSpell.name}}</button>
-                <button type="button" class="btn btn-danger" ng-click="removeSpellFromCharacter(characterSpell.dbID)">Remove</button>
-            </li>
-            <li>
-                <div class="dropdown">
-                    <button type="button" class="btn btn-primary dropdown-toggle" id="addSpellDropdown" data-toggle="dropdown" aria-expanded="true">
-                        Add Spell
-                        <span class="caret"></span>
-                    </button>
-                    <ul class="dropdown-menu" role="menu" aria-labelledby="addSpellDropdown">
-                        <li ng-repeat="spell in allSpells | orderBy:['level','name']" role="presentation">
-                            <a role="menuitem" ng-click="addSpellToCharacter(spell.dbID)">{{spell.name}}</a>
-                        </li>
-                    </ul>
-                </div>
-            </li>
-        </ul>
+    <div class="row">
+        <div class="col-md-4">
+            <div>Name : <editable-field field-value="character.name"></editable-field></div>
+            <div>Class : <editable-field field-value="character.charClass"></editable-field></div>
+            <div>Race : <editable-field field-value="character.race"></editable-field></div>
+        </div>
+        <div class="col-md-4">
+            <div>Max Health : <editable-field field-value="character.health.max"></editable-field></div>
+            <div>Current Health : <editable-field field-value="character.health.current"></editable-field></div>
+            <div>Temp Health : <editable-field field-value="character.health.temp"></editable-field></div>
+        </div>
+        <div class="col-md-4">
+            <health-display health="character.health" width="300"></health-display>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-4">
+            Spells:
+            <ul>
+                <li ng-repeat="characterSpell in characterSpells | orderBy:['level','name']">
+                    <button type="button" class="btn btn-default" ng-click="openSpellModal(characterSpell.dbID)">{{characterSpell.name}}</button>
+                    <button type="button" class="btn btn-danger" ng-click="removeSpellFromCharacter(characterSpell.dbID)">Remove</button>
+                </li>
+                <li>
+                    <div class="dropdown">
+                        <button type="button" class="btn btn-primary dropdown-toggle" id="addSpellDropdown" data-toggle="dropdown" aria-expanded="true">
+                            Add Spell
+                            <span class="caret"></span>
+                        </button>
+                        <ul class="dropdown-menu" role="menu" aria-labelledby="addSpellDropdown">
+                            <li ng-repeat="spell in allSpells | orderBy:['level','name']" role="presentation">
+                                <a role="menuitem" ng-click="addSpellToCharacter(spell.dbID)">{{spell.name}}</a>
+                            </li>
+                        </ul>
+                    </div>
+                </li>
+            </ul>
+        </div>
+        <div class="col-md-4">
+            Inventory:
+            <ul>
+                <li ng-repeat="characterItem in characterItems | orderBy:'name'">
+                    <button type="button" class="btn btn-default" ng-click="openItemModal(characterItem.dbID)">{{characterItem.name}}</button>
+                    <button type="button" class="btn btn-danger" ng-click="removeItemFromCharacter(characterItem.dbID)">Remove</button>
+                </li>
+                <li>
+                    <div class="dropdown">
+                        <button type="button" class="btn btn-primary dropdown-toggle" id="addItemDropdown" data-toggle="dropdown" aria-expanded="true">
+                            Add Item
+                            <span class="caret"></span>
+                        </button>
+                        <ul class="dropdown-menu" role="menu" aria-labelledby="addItemDropdown">
+                            <li ng-repeat="item in allItems | orderBy:'name'" role="presentation">
+                                <a role="menuitem" ng-click="addItemToCharacter(item.dbID)">{{item.name}}</a>
+                            </li>
+                        </ul>
+                    </div>
+                </li>
+            </ul>
+        </div>
     </div>
 </div>
 
 
-<!-- Add Spell Modal -->
+<!-- Spell Modal -->
 <div class="modal fade" id="spellModal" role="dialog" aria-labelledby="spellLabel" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
@@ -50,14 +82,33 @@
                 </div>
                 <div>
                     Components: <span ng-if="modalSpell.components.verbal">- Verbal</span>
-                                <span ng-if="modalSpell.components.somatic">- Somatic</span>
-                                <span ng-if="modalSpell.components.material">- Materials: {{modalSpell.components.material}}</span>
+                    <span ng-if="modalSpell.components.somatic">- Somatic</span>
+                    <span ng-if="modalSpell.components.material">- Materials: {{modalSpell.components.material}}</span>
                 </div>
                 <div>
                     Description: {{modalSpell.description}}
                 </div>
                 <div>
                     Additional Level Modifier: {{modalSpell.additionalLevelMod}}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Item Modal -->
+<div class="modal fade" id="itemModal" role="dialog" aria-labelledby="itemLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header center-text">
+                <h4 class="modal-title" id="itemLabel">{{modalItem.name}}</h4>
+            </div>
+            <div class="modal-body">
+                <div>
+                    Weight: {{modalItem.weight}}
+                </div>
+                <div>
+                    Description: {{modalItem.description}}
                 </div>
             </div>
         </div>

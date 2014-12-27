@@ -7,6 +7,7 @@ var ObjectID = require('mongodb').ObjectID;
 var Binary = require('mongodb').Binary;
 var Character = require('./lib/character.js');
 var Spell = require('./lib/spell.js');
+var Item = require('./lib/item.js');
 
 app.engine('html', require('ejs-locals'));
 app.set('view engine', 'html');
@@ -158,11 +159,11 @@ app.get('/api/getSpell', function (req, res) {
 			res.send('error connecting');
 			return;
 		}
-		var cs = db.collection('characters');
+		var sc = db.collection('spells');
 		var id = null;
 		try {
 			id = ObjectID.createFromHexString(req.query.id);
-			cs.findOne({_id: id}, function (err, result) {
+			sc.findOne({_id: id}, function (err, result) {
 				if (err) {
 					db.close();
 					res.send('error finding');
@@ -256,7 +257,7 @@ app.post('/api/updateSpell', function (req, res) {
 			res.send('error');
 			return;
 		}
-		var cc = db.collection('spells');
+		var sc = db.collection('spells');
 
 		var id = null;
 		try {
@@ -267,7 +268,136 @@ app.post('/api/updateSpell', function (req, res) {
 			return;
 		}
 
-		cc.update({_id: id}, {$set: params}, {w:1}, function (err, result) {
+		sc.update({_id: id}, {$set: params}, {w:1}, function (err, result) {
+			if(err) {
+				console.log('error updating:', err);
+				db.close();
+				res.send('update error');
+			}
+			db.close();
+			res.sendStatus(200);
+		});
+	});
+});
+
+// Item API
+app.get('/api/getItem', function (req, res) {
+	mongo.connect(dbUrl, function (err, db) {
+		if (err) {
+			db.close();
+			res.send('error connecting');
+			return;
+		}
+		var ic = db.collection('items');
+		var id = null;
+		try {
+			id = ObjectID.createFromHexString(req.query.id);
+			ic.findOne({_id: id}, function (err, result) {
+				if (err) {
+					db.close();
+					res.send('error finding');
+					return;
+				}
+				db.close();
+				res.send(new Item(result));
+			});
+		} catch (e) {
+			db.close();
+			res.send('error try/catch');
+		}
+	});
+});
+
+app.get('/api/allItems', function (req, res) {
+	mongo.connect(dbUrl, function (err, db) {
+		if (err) {
+			db.close();
+			res.send('error');
+			return;
+		}
+		var ic = db.collection('items');
+		var items = [];
+
+		var stream = ic.find().stream();
+		stream.on('data', function (data) {
+			var item = new Item(data);
+			items.push(item.toJSON());
+		});
+		stream.on('end', function () {
+			db.close();
+			res.send(items);
+		});
+	});
+});
+
+app.get('/api/deleteItem', function (req, res) {
+	mongo.connect(dbUrl, function (err, db) {
+		if (err) {
+			db.close();
+			res.send('error connecting');
+			return;
+		}
+		var ic = db.collection('items');
+		var id = null;
+		try {
+			id = ObjectID.createFromHexString(req.query.id);
+			ic.remove({_id: id}, function (err) {
+				if (err) {
+					db.close();
+					res.send('error removing');
+					return;
+				}
+				db.close();
+				res.sendStatus(200);
+			});
+		} catch (e) {
+			db.close();
+			res.send('error try/catch');
+		}
+	});
+});
+
+app.post('/api/addItem', function (req, res) {
+	var item = new Item(req.body);
+	mongo.connect(dbUrl, function (err, db) {
+		if (err) {
+			db.close();
+			res.send('error');
+			return;
+		}
+		var ic = db.collection('items');
+		ic.insert(item.toJSON(), {w:1}, function (err, result) {
+			console.log('Insert Item', result);
+			db.close();
+			res.sendStatus(200);
+		});
+	});
+});
+
+app.post('/api/updateItem', function (req, res) {
+	var params = req.body.params;
+	if (_.isEmpty(params)) {
+		res.sendStatus(200);
+		return;
+	}
+	mongo.connect(dbUrl, function (err, db) {
+		if (err) {
+			db.close();
+			res.send('error');
+			return;
+		}
+		var ic = db.collection('items');
+
+		var id = null;
+		try {
+			id = ObjectID.createFromHexString(req.body.dbID);
+		} catch (e) {
+			db.close();
+			res.send('error try/catch');
+			return;
+		}
+
+		ic.update({_id: id}, {$set: params}, {w:1}, function (err, result) {
 			if(err) {
 				console.log('error updating:', err);
 				db.close();

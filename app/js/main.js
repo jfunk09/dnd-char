@@ -65,6 +65,15 @@ app.config(['$stateProvider', '$urlRouterProvider', '$locationProvider', functio
 					controller: 'spellManagerCtrl'
 				}
 			}
+		})
+		.state('app.itemManager', {
+			url: '/itemManager',
+			views: {
+				'content@': {
+					templateUrl: 'partials/itemManager.html',
+					controller: 'itemManagerCtrl'
+				}
+			}
 		});
 }]);
 
@@ -74,7 +83,8 @@ app.controller('mainMenuCtrl', ['$scope', '$state', '$rootScope', '_', function 
 	$scope.menuTabs = [
 		{number: 0, title: 'Home', state: 'app'},
 		{number: 1, title: 'Character List', state: 'app.characterList'},
-		{number: 2, title: 'Spell Manager', state: 'app.spellManager'}
+		{number: 2, title: 'Spell Manager', state: 'app.spellManager'},
+		{number: 3, title: 'Item Manager', state: 'app.itemManager'}
 	];
 	var initialTab = _.findWhere($scope.menuTabs, {state: $state.current.name});
 	$scope.activeTab = initialTab ? initialTab.number : -1;
@@ -137,12 +147,15 @@ app.controller('characterListCtrl', ['$scope', 'characterService', '$state', '$'
 		};
 	}]);
 
-app.controller('characterPageCtrl', ['$scope', '$stateParams', 'characterService', 'spellService', '_',
-	function ($scope, $stateParams, characterService, spellService, _) {
+app.controller('characterPageCtrl', ['$scope', '$stateParams', '_', 'characterService', 'spellService', 'itemService',
+	function ($scope, $stateParams, _, characterService, spellService, itemService) {
 		$scope.character = null;
 		$scope.allSpells = [];
 		$scope.characterSpells = [];
 		$scope.modalSpell = null;
+		$scope.allItems = [];
+		$scope.characterItems = [];
+		$scope.modalItem = null;
 		function updateCharacterSpells() {
 			if ($scope.character && $scope.character.spells) {
 				$scope.characterSpells = _.filter($scope.allSpells, function (spell) {
@@ -150,6 +163,20 @@ app.controller('characterPageCtrl', ['$scope', '$stateParams', 'characterService
 				});
 			}
 		}
+		function updateCharacterItems() {
+			if ($scope.character && $scope.character.inventory) {
+				$scope.characterItems = _.filter($scope.allItems, function (item) {
+					return _.indexOf($scope.character.inventory, item.dbID) >= 0;
+				});
+			}
+		}
+		function spellFromId(id) {
+			return _.findWhere($scope.allSpells, {dbID: id});
+		}
+		function itemFromId(id) {
+			return _.findWhere($scope.allItems, {dbID: id});
+		}
+
 		characterService.fetchCharacter($stateParams.id)
 			.then(function (result) {
 				$scope.character = result.data;
@@ -158,6 +185,11 @@ app.controller('characterPageCtrl', ['$scope', '$stateParams', 'characterService
 		spellService.fetchSpellList()
 			.then(function (result) {
 				$scope.allSpells = result.data;
+				updateCharacterSpells();
+			});
+		itemService.fetchItemList()
+			.then(function (result) {
+				$scope.allItems = result.data;
 				updateCharacterSpells();
 			});
 
@@ -184,12 +216,25 @@ app.controller('characterPageCtrl', ['$scope', '$stateParams', 'characterService
 				$scope.character.spells.splice(index, 1);
 			}
 		};
-		$scope.spellFromId = function (id) {
-			return _.findWhere($scope.allSpells, {dbID: id});
-		};
 		$scope.openSpellModal = function (id) {
-			$scope.modalSpell = $scope.spellFromId(id);
+			$scope.modalSpell = spellFromId(id);
 			$('#spellModal').modal('show');
+		};
+
+		$scope.addItemToCharacter = function (id) {
+			if (_.indexOf($scope.character.inventory, id) === -1) {
+				$scope.character.inventory.push(id);
+			}
+		};
+		$scope.removeItemFromCharacter = function (id) {
+			var index = _.indexOf($scope.character.inventory, id);
+			if (index !== -1) {
+				$scope.character.inventory.splice(index, 1);
+			}
+		};
+		$scope.openItemModal = function (id) {
+			$scope.modalItem = itemFromId(id);
+			$('#itemModal').modal('show');
 		};
 
 		$scope.$watch('character', function (character) {
@@ -197,6 +242,7 @@ app.controller('characterPageCtrl', ['$scope', '$stateParams', 'characterService
 			characterService.updateCharacter($stateParams.id, character)
 				.then(function () {
 					updateCharacterSpells();
+					updateCharacterItems();
 				});
 		}, true);
 	}]);
@@ -241,6 +287,49 @@ app.controller('spellManagerCtrl', ['$scope', 'spellService', '$',
 		$scope.openNewModal = function () {
 			$scope.newSpell = {};
 			$('#addSpellModal').modal('show');
+		};
+	}]);
+
+app.controller('itemManagerCtrl', ['$scope', 'itemService', '$',
+	function ($scope, itemService, $) {
+		$scope.allItems = [];
+		$scope.newItem = {};
+		$scope.editItem = null;
+		var fetchItems = function () {
+			itemService.fetchItemList()
+				.then(function (results) {
+					$scope.allItems = results.data;
+				});
+		};
+		fetchItems();
+
+		$scope.addItem = function () {
+			itemService.addItem($scope.newItem)
+				.then(function () {
+					fetchItems();
+				});
+			$('#addItemModal').modal('hide');
+		};
+		$scope.deleteItem = function (spell) {
+			itemService.deleteItem(spell.dbID)
+				.then(function () {
+					fetchItems();
+				});
+		};
+		$scope.updateItem = function () {
+			itemService.updateItem($scope.editItem.dbID, $scope.editItem)
+				.then(function () {
+					fetchItems();
+				});
+			$('#editItemModal').modal('hide');
+		};
+		$scope.openEditModal = function (item) {
+			$scope.editItem = item;
+			$('#editItemModal').modal('show');
+		};
+		$scope.openNewModal = function () {
+			$scope.newItem = {};
+			$('#addItemModal').modal('show');
 		};
 	}]);
 
@@ -433,6 +522,27 @@ app.service('spellService', ['$http', function ($http) {
 		updateSpell: function (id, params) {
 			var postParams = {dbID: id, params: params};
 			return $http.post('/api/updateSpell', postParams);
+		}
+	}
+}]);
+
+app.service('itemService', ['$http', function ($http) {
+	return {
+		fetchItem: function (id) {
+			return $http.get('/api/getItem?id=' + id);
+		},
+		fetchItemList: function () {
+			return $http.get('/api/allItems');
+		},
+		deleteItem: function (id) {
+			return $http.get('/api/deleteItem?id=' + id);
+		},
+		addItem: function (params) {
+			return $http.post('/api/addItem', params);
+		},
+		updateItem: function (id, params) {
+			var postParams = {dbID: id, params: params};
+			return $http.post('/api/updateItem', postParams);
 		}
 	}
 }]);
