@@ -20,7 +20,7 @@
             <ul>
                 <li ng-repeat="characterSpell in characterSpells | orderBy:['level','name']">
                     <button type="button" class="btn btn-default" ng-click="openSpellModal(characterSpell.dbID)">{{characterSpell.name}}</button>
-                    <button type="button" class="btn btn-danger" ng-click="removeSpellFromCharacter(characterSpell.dbID)">Remove</button>
+                    <button type="button" class="btn btn-xs btn-danger" ng-click="removeSpellFromCharacter(characterSpell.dbID)">Remove</button>
                 </li>
                 <li>
                     <div class="dropdown">
@@ -42,7 +42,7 @@
             <ul>
                 <li ng-repeat="characterItem in characterItems | orderBy:'name'">
                     <button type="button" class="btn btn-default" ng-click="openItemModal(characterItem.dbID)">{{characterItem.name}}</button>
-                    <button type="button" class="btn btn-danger" ng-click="removeItemFromCharacter(characterItem.dbID)">Remove</button>
+                    <button type="button" class="btn btn-xs btn-danger" ng-click="removeItemFromCharacter(characterItem.dbID)">Remove</button>
                 </li>
                 <li>
                     <div class="dropdown">
@@ -57,6 +57,16 @@
                         </ul>
                     </div>
                 </li>
+            </ul>
+        </div>
+        <div class="col-md-4">
+            Money:
+            <ul>
+                <li>Copper: <editable-field field-value="character.money.copper"></editable-field></li>
+                <li>Silver: <editable-field field-value="character.money.silver"></editable-field></li>
+                <li>Electrum: <editable-field field-value="character.money.electrum"></editable-field></li>
+                <li>Gold: <editable-field field-value="character.money.gold"></editable-field></li>
+                <li>Platinum: <editable-field field-value="character.money.platinum"></editable-field></li>
             </ul>
         </div>
     </div>

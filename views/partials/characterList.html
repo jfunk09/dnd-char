@@ -2,7 +2,7 @@
 	<ul>
 		<li ng-repeat="character in characters | orderBy:'name'">
 			<button type="button" class="btn btn-default" ng-click="goToCharacter(character.dbID)">{{character.name}}</button>
-			<button type="button" class="btn btn-danger" ng-click="confirmDeleteModal(character)">Delete</button>
+			<button type="button" class="btn btn-xs btn-danger" ng-click="confirmDeleteModal(character)">Delete</button>
 		</li>
 		<li>
 			<button type="button" class="btn btn-primary" ng-click="openCreateModal()">+</button>

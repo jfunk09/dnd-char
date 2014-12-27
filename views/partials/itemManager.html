@@ -2,7 +2,7 @@
 	<ul>
 		<li ng-repeat="item in allItems | orderBy:'name'">
 			<button type="button" class="btn btn-default" ng-click="openEditModal(item)">{{item.name}}</button>
-			<button type="button" class="btn btn-danger" ng-click="deleteItem(item)">Delete Item</button>
+			<button type="button" class="btn btn-xs btn-danger" ng-click="deleteItem(item)">Delete Item</button>
 		</li>
 		<li>
 			<button type="button" class="btn btn-primary" ng-click="openNewModal()">+</button>
