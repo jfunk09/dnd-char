@@ -157,6 +157,7 @@ app.controller('characterPageCtrl', ['$scope', '$stateParams', '_', 'characterSe
 		$scope.allItems = [];
 		$scope.characterItems = [];
 		$scope.modalItem = null;
+		$scope.totalWeight = 0;
 		function updateCharacterSpells() {
 			if ($scope.character && $scope.character.spells) {
 				$scope.characterSpells = _.filter($scope.allSpells, function (spell) {
@@ -166,10 +167,13 @@ app.controller('characterPageCtrl', ['$scope', '$stateParams', '_', 'characterSe
 		}
 		function updateCharacterItems() {
 			if ($scope.character && $scope.character.inventory) {
+				var totalWeight = 0;
 				$scope.characterItems = _.map($scope.character.inventory, function (characterItem) {
 					var item = _.findWhere($scope.allItems, {dbID: characterItem.id});
+					totalWeight += (item.weight * characterItem.quantity);
 					return {item: item, quantity: characterItem.quantity};
 				});
+				$scope.totalWeight = totalWeight;
 			}
 		}
 		function spellFromId(id) {
@@ -226,7 +230,7 @@ app.controller('characterPageCtrl', ['$scope', '$stateParams', '_', 'characterSe
 
 		$scope.addItemToCharacter = function (id) {
 			if (_.indexOf($scope.character.inventory, id) === -1) {
-				$scope.character.inventory.push({id: id, quantity: '1'});
+				$scope.character.inventory.push({id: id, quantity: 1});
 			}
 		};
 		$scope.removeItemFromCharacter = function (id) {
@@ -260,8 +264,8 @@ app.controller('characterPageCtrl', ['$scope', '$stateParams', '_', 'characterSe
 		}, true);
 	}]);
 
-app.controller('spellManagerCtrl', ['$scope', 'spellService', '$',
-	function ($scope, spellService, $) {
+app.controller('spellManagerCtrl', ['$scope', 'spellService', '$', '_',
+	function ($scope, spellService, $, _) {
 		$scope.allSpells = [];
 		$scope.newSpell = {};
 		$scope.editSpell = null;
@@ -294,7 +298,7 @@ app.controller('spellManagerCtrl', ['$scope', 'spellService', '$',
 			$('#editSpellModal').modal('hide');
 		};
 		$scope.openEditModal = function (spell) {
-			$scope.editSpell = spell;
+			$scope.editSpell = _.extend({}, spell);
 			$('#editSpellModal').modal('show');
 		};
 		$scope.openNewModal = function () {
@@ -303,8 +307,8 @@ app.controller('spellManagerCtrl', ['$scope', 'spellService', '$',
 		};
 	}]);
 
-app.controller('itemManagerCtrl', ['$scope', 'itemService', '$',
-	function ($scope, itemService, $) {
+app.controller('itemManagerCtrl', ['$scope', 'itemService', '$', '_',
+	function ($scope, itemService, $, _) {
 		$scope.allItems = [];
 		$scope.newItem = {};
 		$scope.editItem = null;
@@ -337,7 +341,7 @@ app.controller('itemManagerCtrl', ['$scope', 'itemService', '$',
 			$('#editItemModal').modal('hide');
 		};
 		$scope.openEditModal = function (item) {
-			$scope.editItem = item;
+			$scope.editItem = _.extend({}, item);
 			$('#editItemModal').modal('show');
 		};
 		$scope.openNewModal = function () {
@@ -352,7 +356,8 @@ app.directive('editableField', ['$', '_', function ($, _) {
 	return {
 		restrict: 'E',
 		scope: {
-			fieldValue: '='
+			fieldValue: '=',
+			number: '@'
 		},
 		templateUrl: 'partials/editableField.html',
 		link: function postLink($scope, element) {
