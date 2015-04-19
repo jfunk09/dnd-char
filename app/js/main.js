@@ -160,6 +160,9 @@ app.controller('characterPageCtrl', ['$scope', '$stateParams', '_', 'characterSe
 		$scope.totalWeight = 0;
 		function updateCharacterSpells() {
 			if ($scope.character && $scope.character.spells) {
+				$scope.character.spells = _.filter($scope.character.spells, function(spellId) {
+					return _.findWhere($scope.allSpells, {dbID: spellId});
+				});
 				$scope.characterSpells = _.filter($scope.allSpells, function (spell) {
 					return _.indexOf($scope.character.spells, spell.dbID) >= 0;
 				});
@@ -168,11 +171,16 @@ app.controller('characterPageCtrl', ['$scope', '$stateParams', '_', 'characterSe
 		function updateCharacterItems() {
 			if ($scope.character && $scope.character.inventory) {
 				var totalWeight = 0;
-				$scope.characterItems = _.map($scope.character.inventory, function (characterItem) {
+				$scope.characterItems = _.chain($scope.character.inventory).map(function (characterItem) {
 					var item = _.findWhere($scope.allItems, {dbID: characterItem.id});
-					totalWeight += (item.weight * characterItem.quantity);
-					return {item: item, quantity: characterItem.quantity};
-				});
+					if(item) {
+						totalWeight += (item.weight * characterItem.quantity);
+						return {item: item, quantity: characterItem.quantity};
+					} else {
+						$scope.removeItemFromCharacter(characterItem.id);
+						return null;
+					}
+				}).filter(function (item) { return item; }).value();
 				$scope.totalWeight = totalWeight;
 			}
 		}
@@ -197,7 +205,7 @@ app.controller('characterPageCtrl', ['$scope', '$stateParams', '_', 'characterSe
 		itemService.fetchItemList()
 			.then(function (result) {
 				$scope.allItems = result.data;
-				updateCharacterSpells();
+				updateCharacterItems();
 			});
 
 		$scope.spellSubtitle = function () {
@@ -309,6 +317,7 @@ app.controller('spellManagerCtrl', ['$scope', 'spellService', '$', '_',
 
 app.controller('itemManagerCtrl', ['$scope', 'itemService', '$', '_',
 	function ($scope, itemService, $, _) {
+		$scope.types = ["Weapon", "Apparel", "Misc"];
 		$scope.allItems = [];
 		$scope.newItem = {};
 		$scope.editItem = null;

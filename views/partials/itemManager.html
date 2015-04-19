@@ -15,11 +15,17 @@
 	<div class="modal-dialog">
 		<div class="modal-content">
 			<div class="modal-header">
-				<h4 class="modal-title center-text" id="newItemLabel">Add New Spell</h4>
+				<h4 class="modal-title center-text" id="newItemLabel">Add New Item</h4>
 			</div>
 			<div class="modal-body">
 				<div>
 					Item Name: <input type="text" ng-model="newItem.name"/>
+				</div>
+				<div>
+					Item Type:
+					<select ng-model="newItem.type">
+						<option ng-repeat="type in types">{{type}}</option>
+					</select>
 				</div>
 				<div>
 					Item Weight: <input type="number" ng-model="newItem.weight"/>
@@ -44,11 +50,17 @@
 	<div class="modal-dialog">
 		<div class="modal-content">
 			<div class="modal-header center-text">
-				<h4 class="modal-title" id="editItemLabel">Edit Spell</h4>
+				<h4 class="modal-title" id="editItemLabel">Edit Item</h4>
 			</div>
 			<div class="modal-body">
 				<div>
 					Item Name: <input type="text" ng-model="editItem.name"/>
+				</div>
+				<div>
+					Item Type:
+					<select ng-model="editItem.type">
+						<option ng-repeat="type in types">{{type}}</option>
+					</select>
 				</div>
 				<div>
 					Item Weight: <input type="number" ng-model="editItem.weight"/>
